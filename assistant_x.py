@@ -22,6 +22,18 @@ class Phone(Field):
 
     def validate(self):
         return len(self.value) == 10 and self.value.isdigit()
+    
+class Addres(Field):
+    pass
+ 
+class Email(Field):
+    def __init__(self, value):
+        super().__init__(value)
+        if not self.validate():
+            raise ValueError("Invalid email address")
+        
+    def validate(self):
+        return "@" in self.value
 
 class Birthday(Field):
     def __init__(self, date_string):
