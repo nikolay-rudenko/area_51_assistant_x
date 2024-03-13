@@ -3,6 +3,7 @@ import datetime
 import os
 import pickle
 
+
 class Field:
     def __init__(self, value):
         self.value = value
@@ -14,8 +15,10 @@ class Field:
 class Name(Field):
     pass
 
+
 class Note(Field):
     pass
+
 
 class Phone(Field):
     def __init__(self, value):
@@ -26,8 +29,10 @@ class Phone(Field):
     def validate(self):
         return len(self.value) == 10 and self.value.isdigit()
 
+
 class Address(Field):
     pass
+
 
 class Email(Field):
     def __init__(self, value):
@@ -37,6 +42,7 @@ class Email(Field):
 
     def validate(self):
         return "@" in self.value
+
 
 class Birthday(Field):
     def __init__(self, date_string):
@@ -50,7 +56,32 @@ class Birthday(Field):
         except ValueError:
             return None
 
+
 class Record:
+    """
+    Цей клас описує запис у адресній книзі.
+
+    Атрибути:
+        name (str): Ім'я контакту.
+        phones (list): Список номерів телефонів контакту.
+        birthday (datetime.date): Дата народження контакту.
+        address (str): Адреса контакту.
+        email (str): Адреса електронної пошти контакту.
+        notes (list): Список нотаток про контакт.
+
+    Методи:
+        add_phone(phone_number: str): Додати номер телефону до списку телефонів.
+        remove_phone(phone_number: str): Видалити номер телефону зі списку телефонів.
+        edit_phone(old_number: str, new_number: str): Змінити номер телефону в списку.
+        find_phone(phone_number: str): Знайти номер телефону в списку.
+        add_birthday(birthday: datetime.date): Додати дату народження.
+        days_to_birthday(): Розрахувати дні до дня народження.
+        show_notes(): Показати всі нотатки.
+        add_note(note: str): Додати нотатку.
+        edit_note(note_index: int, new_note: str): Змінити нотатку.
+        remove_note(note_index: int): Видалити нотатку.
+    """
+
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
@@ -65,9 +96,9 @@ class Record:
     def add_address(self, address):
         self.address = Address(address)
 
-    def add_email(self,email):
+    def add_email(self, email):
         self.email = Email(email)
-    
+
     def add_note(self, note):
         self.notes.append(Note(note))
 
@@ -87,15 +118,15 @@ class Record:
         if note_index < 0 or note_index >= len(self.notes):
             return "Invalid note index"
         self.notes[note_index] = Note(new_note)
-    
+
     def remove_note(self, note_index):
         if note_index < 0 or note_index >= len(self.notes):
             return "Invalid note index"
         del self.notes[note_index]
-    
+
     def show_notes(self):
         return '; '.join(note.value for note in self.notes)
-    
+
     def add_birthday(self, birthday):
         self.birthday = birthday
         return True
@@ -116,12 +147,28 @@ class Record:
         return (f"Contact name: {self.name.value}, "
                 f"phones: {'; '.join(p.value for p in self.phones)}"
                 f", birthday: {self.birthday}" if self.birthday else "No birthday"
-                f"address: {self.address}" if self.address else "No address"
-                f"email: {self.email}" if self.email else "No email"
+                                                                     f"address: {self.address}" if self.address else "No address"
+                                                                                                                     f"email: {self.email}" if self.email else "No email"
                 )
 
 
 class AddressBook(UserDict):
+    """
+        Цей клас описує адресну книгу.
+
+        Атрибути:
+            data (dict): Словник, де ключем є ім'я контакту, а значенням - екземпляр класу Record.
+
+        Методи:
+            add_record(record: Record): Додати запис до адресної книги.
+            find(name: str): Знайти запис за ім'ям.
+            delete(name: str): Видалити запис за ім'ям.
+            change_phone(name: str, new_phone: str): Змінити номер телефону для контакту.
+            show_phone(name: str): Показати номер телефону для контакту.
+            show_notes(name: str): Показати всі нотатки для контакту.
+            show_all(): Показати всі записи в адресній книзі.
+        """
+
     def add_record(self, record):
         self.data[record.name.value] = record
 
@@ -130,7 +177,7 @@ class AddressBook(UserDict):
 
     def delete(self, name):
         del self.data[name]
-    
+
     def change_phone(self, name, new_phone):
         record = self.data.get(name)
         if record and record.phones:
@@ -141,7 +188,7 @@ class AddressBook(UserDict):
         record = self.data.get(name)
         if record:
             return '; '.join(phone.value for phone in record.phones)
-        
+
     def show_notes(self, name):
         record = self.data.get(name)
         if record:
@@ -149,6 +196,7 @@ class AddressBook(UserDict):
 
     def show_all(self):
         return '\n'.join(str(record) for record in self.data.values())
+
 
 def show_birthdays_in_period_handler(args):
     if len(args) != 2:
@@ -193,7 +241,9 @@ def save_data(obj_to_save, file_name):
             with open(file_path, 'wb') as file:
                 pickle.dump(obj_to_save, file)
             return result
+
         return inner_wrapper
+
     return wrapper
 
 
@@ -207,10 +257,12 @@ def get_address_book(file_name):
     except FileNotFoundError:
         return AddressBook()
 
+
 # Handlers
 print("Welcome to the Address Book Assistant")
 file_name = 'ab_data.bin'
 book = get_address_book(file_name)
+
 
 @save_data(book, file_name)
 def add_handler(args):
@@ -222,6 +274,7 @@ def add_handler(args):
     book.add_record(record)
     return f"Contact {name} added"
 
+
 @save_data(book, file_name)
 def change_handler(args):
     if len(args) != 3:
@@ -230,14 +283,17 @@ def change_handler(args):
     book.change_phone(name, new_phone)
     return f"Phone number for {name} changed"
 
+
 def phone_handler(args):
     if len(args) != 2:
         return "Invalid command usage: phone <name>"
     name = args[1]
     return book.show_phone(name) or f"Contact {name} not found"
 
+
 def all_handler(args):
     return book.show_all()
+
 
 @save_data(book, file_name)
 def add_address_hadler(args):
@@ -250,6 +306,8 @@ def add_address_hadler(args):
         return f"Address added for {name}"
     else:
         return f"Contact {name} not found"
+
+
 @save_data(book, file_name)
 def add_email_handler(args):
     if len(args) != 3:
@@ -261,6 +319,8 @@ def add_email_handler(args):
         return f"Email added for {name}"
     else:
         return f"Contact {name} not found"
+
+
 @save_data(book, file_name)
 def add_birthday_handler(args):
     if len(args) != 3:
@@ -274,6 +334,7 @@ def add_birthday_handler(args):
     else:
         return f"Contact {name} not found"
 
+
 def show_birthday_handler(args):
     if len(args) != 2:
         return "Invalid command usage: show-birthday <name>"
@@ -284,6 +345,7 @@ def show_birthday_handler(args):
     else:
         return f"Contact {name} does not have a birthday or not found"
 
+
 def show_birthdays_next_week_handler(args):
     today = datetime.date.today()
     next_week = today + datetime.timedelta(days=7)
@@ -291,15 +353,19 @@ def show_birthdays_next_week_handler(args):
 
     for contact in book.values():
         if contact.birthday:
-            birthday_date = datetime.date(contact.birthday.value.year, contact.birthday.value.month, contact.birthday.value.day)
-            if (birthday_date.day, birthday_date.month) >= (today.day, today.month) and (birthday_date.day, birthday_date.month) <= (next_week.day, next_week.month):
+            birthday_date = datetime.date(contact.birthday.value.year, contact.birthday.value.month,
+                                          contact.birthday.value.day)
+            if (birthday_date.day, birthday_date.month) >= (today.day, today.month) and (
+            birthday_date.day, birthday_date.month) <= (next_week.day, next_week.month):
                 birthdays.append(contact)
     if birthdays:
         for birthday in birthdays:
             print(f"Upcoming birthdays within the next week:\n {birthday}")
-    else: 'No birthdays within the next week.'
+    else:
+        'No birthdays within the next week.'
 
     return ''
+
 
 @save_data(book, file_name)
 def add_note_handler(args):
@@ -312,6 +378,7 @@ def add_note_handler(args):
         return f"Note added for {name}"
     else:
         return f"Contact {name} not found"
+
 
 @save_data(book, file_name)
 def edit_note_handler(args):
@@ -327,12 +394,14 @@ def edit_note_handler(args):
             return f"Invalid note index for contact {name}"
         else:
             return f"Note edited for {name}"
-    
+
+
 def show_note_handler(args):
-        if len(args) != 2:
-            return "Invalid command usage: note <name>"
-        name = args[1]
-        return book.show_notes(name) or f"Contact {name} not found"
+    if len(args) != 2:
+        return "Invalid command usage: note <name>"
+    name = args[1]
+    return book.show_notes(name) or f"Contact {name} not found"
+
 
 @save_data(book, file_name)
 def delete_note_handler(args):
@@ -350,11 +419,14 @@ def delete_note_handler(args):
     else:
         return f"Contact {name} not found"
 
+
 def hello_handler(args):
     return "Hello, how can I assist you today?"
 
+
 def close_handler(args):
     exit(0)
+
 
 handlers = {
     'add': add_handler,
