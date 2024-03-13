@@ -115,7 +115,7 @@ class Record:
     def __str__(self):
         return (f"Contact name: {self.name.value}, "
                 f"phones: {'; '.join(p.value for p in self.phones)}"
-                f"birthday: {self.birthday}" if self.birthday else "No birthday"
+                f", birthday: {self.birthday}" if self.birthday else "No birthday"
                 f"address: {self.address}" if self.address else "No address"
                 f"email: {self.email}" if self.email else "No email"
                 )
