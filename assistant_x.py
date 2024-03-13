@@ -65,10 +65,10 @@ class Record:
             return None
 
         today = datetime.date.today()
-        birthday_date = datetime.date(today.year, self.birthday.month, self.birthday.day)
+        birthday_date = datetime.date(today.year, self.birthday.value.month, self.birthday.value.day)
 
-        if birthday_date < today:  # День народження вже пройшов цього року
-            birthday_date = birthday_date.replace(year=today.year + 1)
+        if birthday_date < today:  # If birthday has passed this year, calculate for next year
+            birthday_date = datetime.date(today.year + 1, self.birthday.value.month, self.birthday.value.day)
 
         return (birthday_date - today).days
 
@@ -102,6 +102,38 @@ class AddressBook(UserDict):
 
     def show_all(self):
         return '\n'.join(str(record) for record in self.data.values())
+
+def show_birthdays_in_period_handler(args):
+    if len(args) != 2:
+        return "Invalid command usage: birthdays-in-period <days>"
+    
+    try:
+        days = int(args[1])
+    except ValueError:
+        return "Invalid number of days"
+
+    today = datetime.date.today()
+    end_date = today + datetime.timedelta(days=days)
+
+    upcoming_birthdays = []
+
+    for contact in book.values():
+        if contact.birthday:
+            birthday_month_day = (contact.birthday.value.month, contact.birthday.value.day)
+            today_month_day = (today.month, today.day)
+            end_month_day = (end_date.month, end_date.day)
+
+            if today_month_day <= birthday_month_day <= end_month_day:
+                upcoming_birthdays.append((contact, contact.days_to_birthday()))
+
+    if upcoming_birthdays:
+        result = "Upcoming birthdays in the specified period:\n"
+        for contact, days_left in upcoming_birthdays:
+            result += f"{contact.name.value}: {days_left} days left\n"
+    else:
+        result = "No birthdays in the specified period."
+
+    return result
 
 
 # Decorators
@@ -163,7 +195,7 @@ def all_handler(args):
 @save_data(book, file_name)
 def add_birthday_handler(args):
     if len(args) != 3:
-        return "Invalid command usage: add_birthday <name> <birthday>"
+        return "Invalid command usage: add-birthday <name> <birthday>"
     name, birthday = args[1:]
     contact = book.find(name)
     if contact:
@@ -175,7 +207,7 @@ def add_birthday_handler(args):
 
 def show_birthday_handler(args):
     if len(args) != 2:
-        return "Invalid command usage: show_birthday <name>"
+        return "Invalid command usage: show-birthday <name>"
     name = args[1]
     contact = book.find(name)
     if contact and contact.birthday:
@@ -213,6 +245,7 @@ handlers = {
     'all': all_handler,
     'add-birthday': add_birthday_handler,
     'show-birthday': show_birthday_handler,
+    'birthdays-in-period': show_birthdays_in_period_handler,
     'birthdays': show_birthdays_next_week_handler,
     'hello': hello_handler,
     'close': close_handler,
