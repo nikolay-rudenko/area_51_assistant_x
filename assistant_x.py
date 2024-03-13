@@ -65,8 +65,8 @@ class Record:
         today = datetime.date.today()
         birthday_date = datetime.date(today.year, self.birthday.value.month, self.birthday.value.day)
 
-        if birthday_date < today:  # День народження вже пройшов цього року
-            birthday_date = birthday_date.replace(year=today.year + 1)
+        if birthday_date < today:  # If birthday has passed this year, calculate for next year
+            birthday_date = datetime.date(today.year + 1, self.birthday.value.month, self.birthday.value.day)
 
         return (birthday_date - today).days
 
@@ -104,32 +104,34 @@ class AddressBook(UserDict):
 def show_birthdays_in_period_handler(args):
     if len(args) != 2:
         return "Invalid command usage: birthdays-in-period <days>"
+    
     try:
         days = int(args[1])
-        if days <= 0:
-            return "Number of days must be a positive integer"
     except ValueError:
         return "Invalid number of days"
 
     today = datetime.date.today()
     end_date = today + datetime.timedelta(days=days)
-    birthdays = []
+
+    upcoming_birthdays = []
 
     for contact in book.values():
         if contact.birthday:
-            birthday_date = datetime.date(contact.birthday.value.year, contact.birthday.value.month, contact.birthday.value.day)
-            if today <= birthday_date <= end_date:
-                birthdays.append(contact)
+            birthday_month_day = (contact.birthday.value.month, contact.birthday.value.day)
+            today_month_day = (today.month, today.day)
+            end_month_day = (end_date.month, end_date.day)
 
-    if birthdays:
-        for birthday in birthdays:
-            days_left = birthday.days_to_birthday()
-            print(f"Upcoming birthday for {birthday.name.value}: {birthday.birthday.value.strftime('%d.%m.%Y')}, "
-                  f"days left: {days_left}")
+            if today_month_day <= birthday_month_day <= end_month_day:
+                upcoming_birthdays.append((contact, contact.days_to_birthday()))
+
+    if upcoming_birthdays:
+        result = "Upcoming birthdays in the specified period:\n"
+        for contact, days_left in upcoming_birthdays:
+            result += f"{contact.name.value}: {days_left} days left\n"
     else:
-        print('No birthdays in the specified period.')
+        result = "No birthdays in the specified period."
 
-    return ''
+    return result
 
 def add_handler(args):
     if len(args) != 3:
