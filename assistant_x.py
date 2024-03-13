@@ -1,6 +1,7 @@
 from collections import UserDict
 import datetime
-
+import os
+import pickle
 
 class Field:
     def __init__(self, value):
@@ -21,16 +22,16 @@ class Phone(Field):
 
     def validate(self):
         return len(self.value) == 10 and self.value.isdigit()
-    
+
 class Address(Field):
     pass
- 
+
 class Email(Field):
     def __init__(self, value):
         super().__init__(value)
         if not self.validate():
             raise ValueError("Invalid email address")
-        
+
     def validate(self):
         return "@" in self.value
 
@@ -85,10 +86,10 @@ class Record:
             return None
 
         today = datetime.date.today()
-        birthday_date = datetime.date(today.year, self.birthday.month, self.birthday.day)
+        birthday_date = datetime.date(today.year, self.birthday.value.month, self.birthday.value.day)
 
-        if birthday_date < today:  # День народження вже пройшов цього року
-            birthday_date = birthday_date.replace(year=today.year + 1)
+        if birthday_date < today:  # If birthday has passed this year, calculate for next year
+            birthday_date = datetime.date(today.year + 1, self.birthday.value.month, self.birthday.value.day)
 
         return (birthday_date - today).days
 
@@ -125,6 +126,69 @@ class AddressBook(UserDict):
     def show_all(self):
         return '\n'.join(str(record) for record in self.data.values())
 
+def show_birthdays_in_period_handler(args):
+    if len(args) != 2:
+        return "Invalid command usage: birthdays-in-period <days>"
+
+    try:
+        days = int(args[1])
+    except ValueError:
+        return "Invalid number of days"
+
+    today = datetime.date.today()
+    end_date = today + datetime.timedelta(days=days)
+
+    upcoming_birthdays = []
+
+    for contact in book.values():
+        if contact.birthday:
+            birthday_month_day = (contact.birthday.value.month, contact.birthday.value.day)
+            today_month_day = (today.month, today.day)
+            end_month_day = (end_date.month, end_date.day)
+
+            if today_month_day <= birthday_month_day <= end_month_day:
+                upcoming_birthdays.append((contact, contact.days_to_birthday()))
+
+    if upcoming_birthdays:
+        result = "Upcoming birthdays in the specified period:\n"
+        for contact, days_left in upcoming_birthdays:
+            result += f"{contact.name.value}: {days_left} days left\n"
+    else:
+        result = "No birthdays in the specified period."
+
+    return result
+
+
+# Decorators
+def save_data(obj_to_save, file_name):
+    def wrapper(func):
+        def inner_wrapper(self, *args, **kwargs):
+            result = func(self, *args, **kwargs)
+            usr_dir = os.path.expanduser('~')
+            file_path = os.path.join(usr_dir, file_name)
+            with open(file_path, 'wb') as file:
+                pickle.dump(obj_to_save, file)
+            return result
+        return inner_wrapper
+    return wrapper
+
+
+def get_address_book(file_name):
+    usr_dir = os.path.expanduser('~')
+    file_name = os.path.join(usr_dir, 'ab_data.bin')
+
+    try:
+        with open(file_name, 'rb') as file:
+            return pickle.load(file)
+    except FileNotFoundError:
+        return AddressBook()
+
+# Handlers
+print("Welcome to the Address Book Assistant")
+file_name = 'ab_data.bin'
+book = get_address_book(file_name)
+
+@save_data(book, file_name)
 def add_handler(args):
     if len(args) != 3:
         return "Invalid command usage: add <name> <phone>"
@@ -134,6 +198,7 @@ def add_handler(args):
     book.add_record(record)
     return f"Contact {name} added"
 
+@save_data(book, file_name)
 def change_handler(args):
     if len(args) != 3:
         return "Invalid command usage: change <name> <new_phone>"
@@ -150,6 +215,7 @@ def phone_handler(args):
 def all_handler(args):
     return book.show_all()
 
+@save_data(book, file_name)
 def add_address_hadler(args):
     if len(args) != 3:
         return "Invalid command usage: add_address <name> <address>"
@@ -174,7 +240,7 @@ def add_email_handler(args):
 
 def add_birthday_handler(args):
     if len(args) != 3:
-        return "Invalid command usage: add_birthday <name> <birthday>"
+        return "Invalid command usage: add-birthday <name> <birthday>"
     name, birthday = args[1:]
     contact = book.find(name)
     if contact:
@@ -186,7 +252,7 @@ def add_birthday_handler(args):
 
 def show_birthday_handler(args):
     if len(args) != 2:
-        return "Invalid command usage: show_birthday <name>"
+        return "Invalid command usage: show-birthday <name>"
     name = args[1]
     contact = book.find(name)
     if contact and contact.birthday:
@@ -217,7 +283,6 @@ def hello_handler(args):
 def close_handler(args):
     exit(0)
 
-
 handlers = {
     'add': add_handler,
     'change': change_handler,
@@ -225,6 +290,7 @@ handlers = {
     'all': all_handler,
     'add-birthday': add_birthday_handler,
     'show-birthday': show_birthday_handler,
+    'birthdays-in-period': show_birthdays_in_period_handler,
     'birthdays': show_birthdays_next_week_handler,
     'add-address': add_address_hadler,
     'add-email': add_email_handler,
@@ -232,8 +298,6 @@ handlers = {
     'close': close_handler,
     'exit': close_handler,
 }
-
-book = AddressBook()
 
 while True:
     command = input().split()
