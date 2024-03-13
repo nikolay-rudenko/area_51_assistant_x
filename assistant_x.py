@@ -14,6 +14,9 @@ class Field:
 class Name(Field):
     pass
 
+class Note(Field):
+    pass
+
 class Phone(Field):
     def __init__(self, value):
         super().__init__(value)
@@ -54,6 +57,7 @@ class Record:
         self.birthday = None
         self.address = None
         self.email = None
+        self.notes = []
 
     def add_phone(self, phone_number):
         self.phones.append(Phone(phone_number))
@@ -63,7 +67,9 @@ class Record:
 
     def add_email(self,email):
         self.email = Email(email)
-
+    
+    def add_note(self, note):
+        self.notes.append(Note(note))
 
     def remove_phone(self, phone_number):
         self.phones = [phone for phone in self.phones if phone.value != phone_number]
@@ -77,6 +83,19 @@ class Record:
     def find_phone(self, phone_number):
         return next((phone for phone in self.phones if phone.value == phone_number), None)
 
+    def edit_note(self, note_index, new_note):
+        if note_index < 0 or note_index >= len(self.notes):
+            return "Invalid note index"
+        self.notes[note_index] = Note(new_note)
+    
+    def remove_note(self, note_index):
+        if note_index < 0 or note_index >= len(self.notes):
+            return "Invalid note index"
+        del self.notes[note_index]
+    
+    def show_notes(self):
+        return '; '.join(note.value for note in self.notes)
+    
     def add_birthday(self, birthday):
         self.birthday = birthday
         return True
@@ -122,6 +141,11 @@ class AddressBook(UserDict):
         record = self.data.get(name)
         if record:
             return '; '.join(phone.value for phone in record.phones)
+        
+    def show_notes(self, name):
+        record = self.data.get(name)
+        if record:
+            return '; '.join(note.value for note in record.notes)
 
     def show_all(self):
         return '\n'.join(str(record) for record in self.data.values())
@@ -277,6 +301,55 @@ def show_birthdays_next_week_handler(args):
 
     return ''
 
+@save_data(book, file_name)
+def add_note_handler(args):
+    if len(args) != 3:
+        return "Invalid command usage: add-note <name> <note>"
+    name, note = args[1:]
+    contact = book.find(name)
+    if contact:
+        contact.add_note(note)
+        return f"Note added for {name}"
+    else:
+        return f"Contact {name} not found"
+
+@save_data(book, file_name)
+def edit_note_handler(args):
+    if len(args) < 4:
+        return "Invalid command usage: edit-note <name> <note_index> <new_note>"
+    name = args[1]
+    note_index = int(args[2])
+    new_note = ' '.join(args[3:])
+    contact = book.find(name)
+    if contact:
+        result = contact.edit_note(note_index, new_note)
+        if result == "Invalid note index":
+            return f"Invalid note index for contact {name}"
+        else:
+            return f"Note edited for {name}"
+    
+def show_note_handler(args):
+        if len(args) != 2:
+            return "Invalid command usage: note <name>"
+        name = args[1]
+        return book.show_notes(name) or f"Contact {name} not found"
+
+@save_data(book, file_name)
+def delete_note_handler(args):
+    if len(args) != 3:
+        return "Invalid command usage: delete-note <name> <index>"
+    name = args[1]
+    note_index = int(args[2])
+    contact = book.find(name)
+    if contact:
+        result = contact.remove_note(note_index)
+        if result == "Invalid note index":
+            return f"Invalid note index for contact {name}"
+        else:
+            return f"Note deleted for {name}"
+    else:
+        return f"Contact {name} not found"
+
 def hello_handler(args):
     return "Hello, how can I assist you today?"
 
@@ -294,6 +367,10 @@ handlers = {
     'birthdays': show_birthdays_next_week_handler,
     'add-address': add_address_hadler,
     'add-email': add_email_handler,
+    'add-note': add_note_handler,
+    'edit-note': edit_note_handler,
+    'note': show_note_handler,
+    'delete-note': delete_note_handler,
     'hello': hello_handler,
     'close': close_handler,
     'exit': close_handler,
