@@ -226,7 +226,7 @@ def add_address_hadler(args):
         return f"Address added for {name}"
     else:
         return f"Contact {name} not found"
-
+@save_data(book, file_name)
 def add_email_handler(args):
     if len(args) != 3:
         return "Invalid command usage: add_email <name> <email>"
@@ -237,7 +237,7 @@ def add_email_handler(args):
         return f"Email added for {name}"
     else:
         return f"Contact {name} not found"
-
+@save_data(book, file_name)
 def add_birthday_handler(args):
     if len(args) != 3:
         return "Invalid command usage: add-birthday <name> <birthday>"
