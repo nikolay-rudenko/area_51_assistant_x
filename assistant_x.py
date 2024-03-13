@@ -1,5 +1,7 @@
 from collections import UserDict
 import datetime
+import os
+import pickle
 
 class Field:
     def __init__(self, value):
@@ -101,6 +103,37 @@ class AddressBook(UserDict):
     def show_all(self):
         return '\n'.join(str(record) for record in self.data.values())
 
+
+# Decorators
+def save_data(obj_to_save, file_name):
+    def wrapper(func):
+        def inner_wrapper(self, *args, **kwargs):
+            result = func(self, *args, **kwargs)
+            usr_dir = os.path.expanduser('~')
+            file_path = os.path.join(usr_dir, file_name)
+            with open(file_path, 'wb') as file:
+                pickle.dump(obj_to_save, file)
+            return result
+        return inner_wrapper
+    return wrapper
+
+
+def get_address_book(file_name):
+    usr_dir = os.path.expanduser('~')
+    file_name = os.path.join(usr_dir, 'ab_data.bin')
+
+    try:
+        with open(file_name, 'rb') as file:
+            return pickle.load(file)
+    except FileNotFoundError:
+        return AddressBook()
+
+# Handlers
+print("Welcome to the Address Book Assistant")
+file_name = 'ab_data.bin'
+book = get_address_book(file_name)
+
+@save_data(book, file_name)
 def add_handler(args):
     if len(args) != 3:
         return "Invalid command usage: add <name> <phone>"
@@ -110,6 +143,7 @@ def add_handler(args):
     book.add_record(record)
     return f"Contact {name} added"
 
+@save_data(book, file_name)
 def change_handler(args):
     if len(args) != 3:
         return "Invalid command usage: change <name> <new_phone>"
@@ -126,6 +160,7 @@ def phone_handler(args):
 def all_handler(args):
     return book.show_all()
 
+@save_data(book, file_name)
 def add_birthday_handler(args):
     if len(args) != 3:
         return "Invalid command usage: add_birthday <name> <birthday>"
@@ -171,7 +206,6 @@ def hello_handler(args):
 def close_handler(args):
     exit(0)
 
-
 handlers = {
     'add': add_handler,
     'change': change_handler,
@@ -184,8 +218,6 @@ handlers = {
     'close': close_handler,
     'exit': close_handler,
 }
-
-book = AddressBook()
 
 while True:
     command = input().split()
