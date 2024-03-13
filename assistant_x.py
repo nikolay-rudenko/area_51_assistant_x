@@ -1,7 +1,6 @@
 from collections import UserDict
 import datetime
 
-#tested
 
 class Field:
     def __init__(self, value):
@@ -23,7 +22,7 @@ class Phone(Field):
     def validate(self):
         return len(self.value) == 10 and self.value.isdigit()
     
-class Addres(Field):
+class Address(Field):
     pass
  
 class Email(Field):
@@ -52,9 +51,18 @@ class Record:
         self.name = Name(name)
         self.phones = []
         self.birthday = None
+        self.address = None
+        self.email = None
 
     def add_phone(self, phone_number):
         self.phones.append(Phone(phone_number))
+
+    def add_address(self, address):
+        self.address = Address(address)
+
+    def add_email(self,email):
+        self.email = Email(email)
+
 
     def remove_phone(self, phone_number):
         self.phones = [phone for phone in self.phones if phone.value != phone_number]
@@ -84,11 +92,13 @@ class Record:
 
         return (birthday_date - today).days
 
-
     def __str__(self):
         return (f"Contact name: {self.name.value}, "
-                f"phones: {'; '.join(p.value for p in self.phones)}, "
-                f"birthday: {self.birthday}" if self.birthday else "")
+                f"phones: {'; '.join(p.value for p in self.phones)}"
+                f"birthday: {self.birthday}" if self.birthday else "No birthday"
+                f"address: {self.address}" if self.address else "No address"
+                f"email: {self.email}" if self.email else "No email"
+                )
 
 
 class AddressBook(UserDict):
@@ -139,6 +149,28 @@ def phone_handler(args):
 
 def all_handler(args):
     return book.show_all()
+
+def add_address_hadler(args):
+    if len(args) != 3:
+        return "Invalid command usage: add_address <name> <address>"
+    name, address = args[1:]
+    contact = book.find(name)
+    if contact:
+        contact.add_address(address)
+        return f"Address added for {name}"
+    else:
+        return f"Contact {name} not found"
+
+def add_email_handler(args):
+    if len(args) != 3:
+        return "Invalid command usage: add_email <name> <email>"
+    name, email = args[1:]
+    contact = book.find(name)
+    if contact:
+        contact.add_email(email)
+        return f"Email added for {name}"
+    else:
+        return f"Contact {name} not found"
 
 def add_birthday_handler(args):
     if len(args) != 3:
@@ -194,6 +226,8 @@ handlers = {
     'add-birthday': add_birthday_handler,
     'show-birthday': show_birthday_handler,
     'birthdays': show_birthdays_next_week_handler,
+    'add-address': add_address_hadler,
+    'add-email': add_email_handler,
     'hello': hello_handler,
     'close': close_handler,
     'exit': close_handler,
