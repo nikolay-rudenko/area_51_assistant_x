@@ -2,6 +2,7 @@ from collections import UserDict
 import datetime
 import os
 import pickle
+import re
 
 class Field:
     def __init__(self, value):
@@ -30,10 +31,12 @@ class Email(Field):
     def __init__(self, value):
         super().__init__(value)
         if not self.validate():
-            raise ValueError("Invalid email address")
-
+            print("Invalid email address. Please try again.")
+            self.value = None
+            
     def validate(self):
-        return "@" in self.value
+        pattern = r'^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$'
+        return re.match(pattern, self.value) is not None
 
 class Birthday(Field):
     def __init__(self, date_string):
@@ -194,6 +197,13 @@ def add_handler(args):
         return "Invalid command usage: add <name> <phone>"
     name, phone = args[1:]
     record = Record(name)
+
+    try:
+        if not Phone(phone).validate():
+            raise ValueError("Invalid phone number")
+    except ValueError:
+        return "Invalid phone number. Please try again."
+    
     record.add_phone(phone)
     book.add_record(record)
     return f"Contact {name} added"
@@ -203,6 +213,12 @@ def change_handler(args):
     if len(args) != 3:
         return "Invalid command usage: change <name> <new_phone>"
     name, new_phone = args[1:]
+    try:
+        # Validate the new phone number
+        Phone(new_phone)
+    except ValueError:
+        return "Invalid phone number. Please try again."
+    
     book.change_phone(name, new_phone)
     return f"Phone number for {name} changed"
 
