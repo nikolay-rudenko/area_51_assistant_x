@@ -39,9 +39,8 @@ class Email(Field):
     def __init__(self, value):
         super().__init__(value)
         if not self.validate():
-            print("Invalid email address. Please try again.")
             self.value = None
-            
+
     def validate(self):
         pattern = r'^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$'
         return re.match(pattern, self.value) is not None
@@ -100,7 +99,11 @@ class Record:
         self.address = Address(address)
 
     def add_email(self, email):
-        self.email = Email(email)
+        email_obj = Email(email)
+        if email_obj.value is None:  # Check if email is invalid
+            print("Invalid email address. Please try again.")
+        else:
+            self.email = email_obj
 
     def add_note(self, note):
         self.notes.append(Note(note))
@@ -401,8 +404,12 @@ def add_email_handler(args):
     name, email = args[1:]
     contact = book.find(name)
     if contact:
-        contact.add_email(email)
-        return f"Email added for {name}"
+        email_obj = Email(email)
+        if email_obj.value is None:  # Check if email is invalid
+            return "Invalid email address. Please try again."
+        else:
+            contact.add_email(email)
+            return f"Email added for {name}"
     else:
         return f"Contact {name} not found"
 
