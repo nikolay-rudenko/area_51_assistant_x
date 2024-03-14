@@ -2,6 +2,7 @@ from collections import UserDict
 import datetime
 import os
 import pickle
+import re
 
 
 class Field:
@@ -38,10 +39,11 @@ class Email(Field):
     def __init__(self, value):
         super().__init__(value)
         if not self.validate():
-            raise ValueError("Invalid email address")
+            self.value = None
 
     def validate(self):
-        return "@" in self.value
+        pattern = r'^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$'
+        return re.match(pattern, self.value) is not None
 
 
 class Birthday(Field):
@@ -97,7 +99,11 @@ class Record:
         self.address = Address(address)
 
     def add_email(self, email):
-        self.email = Email(email)
+        email_obj = Email(email)
+        if email_obj.value is None:  # Check if email is invalid
+            print("Invalid email address. Please try again.")
+        else:
+            self.email = email_obj
 
     def add_note(self, note):
         self.notes.append(Note(note))
@@ -309,6 +315,13 @@ def add_handler(args):
         return "Invalid command usage: add <name> <phone>"
     name, phone = args[1:]
     record = Record(name)
+
+    try:
+        if not Phone(phone).validate():
+            raise ValueError("Invalid phone number")
+    except ValueError:
+        return "Invalid phone number. Please try again."
+    
     record.add_phone(phone)
     book.add_record(record)
     return f"Contact {name} added"
@@ -319,6 +332,12 @@ def change_handler(args):
     if len(args) != 3:
         return "Invalid command usage: change <name> <new_phone>"
     name, new_phone = args[1:]
+    try:
+        # Validate the new phone number
+        Phone(new_phone)
+    except ValueError:
+        return "Invalid phone number. Please try again."
+    
     book.change_phone(name, new_phone)
     return f"Phone number for {name} changed"
 
@@ -385,8 +404,12 @@ def add_email_handler(args):
     name, email = args[1:]
     contact = book.find(name)
     if contact:
-        contact.add_email(email)
-        return f"Email added for {name}"
+        email_obj = Email(email)
+        if email_obj.value is None:  # Check if email is invalid
+            return "Invalid email address. Please try again."
+        else:
+            contact.add_email(email)
+            return f"Email added for {name}"
     else:
         return f"Contact {name} not found"
 
