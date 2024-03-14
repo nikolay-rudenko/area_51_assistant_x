@@ -112,7 +112,9 @@ class Record:
                 break
 
     def find_phone(self, phone_number):
-        return next((phone for phone in self.phones if phone.value == phone_number), None)
+        return next(
+            (phone for phone in self.phones if phone.value == phone_number), None
+        )
 
     def edit_note(self, note_index, new_note):
         if note_index < 0 or note_index >= len(self.notes):
@@ -136,20 +138,27 @@ class Record:
             return None
 
         today = datetime.date.today()
-        birthday_date = datetime.date(today.year, self.birthday.value.month, self.birthday.value.day)
+        birthday_date = datetime.date(
+            today.year, self.birthday.value.month, self.birthday.value.day
+        )
 
-        if birthday_date < today:  # If birthday has passed this year, calculate for next year
-            birthday_date = datetime.date(today.year + 1, self.birthday.value.month, self.birthday.value.day)
+        if (
+            birthday_date < today
+        ):  # If birthday has passed this year, calculate for next year
+            birthday_date = datetime.date(
+                today.year + 1, self.birthday.value.month, self.birthday.value.day
+            )
 
         return (birthday_date - today).days
 
     def __str__(self):
-        return (f"Contact name: {self.name.value}, "
-                f"phones: {'; '.join(p.value for p in self.phones)}"
-                f", birthday: {self.birthday}" if self.birthday else "No birthday"
+        return (
+            f"Contact name: {self.name.value}, "
+            f"phones: {'; '.join(p.value for p in self.phones)}"
+            f", birthday: {self.birthday}" if self.birthday else ("No birthday"
                                                                      f"address: {self.address}" if self.address else "No address"
                                                                                                                      f"email: {self.email}" if self.email else "No email"
-                )
+                ))
 
 
 class AddressBook(UserDict):
@@ -184,10 +193,36 @@ class AddressBook(UserDict):
             old_phone = record.phones[0].value
             record.edit_phone(old_phone, new_phone)
 
+    # New method to change email
+    def change_email(self, name, new_email):
+        record = self.data.get(name)
+        if record:
+            record.add_email(new_email)
+
+    # New method to change address
+    def change_address(self, name, new_address):
+        record = self.data.get(name)
+        if record:
+            record.add_address(new_address)
+
     def show_phone(self, name):
         record = self.data.get(name)
         if record:
-            return '; '.join(phone.value for phone in record.phones)
+            return "; ".join(phone.value for phone in record.phones)
+
+    def show_email(self, name):
+        record = self.data.get(name)
+        if record and record.email:
+            return record.email.value
+        else:
+            return "No email"
+
+    def show_address(self, name):
+        record = self.data.get(name)
+        if record and record.address:
+            return record.address.value
+        else:
+            return "No address"
 
     def show_notes(self, name):
         record = self.data.get(name)
@@ -195,7 +230,8 @@ class AddressBook(UserDict):
             return '; '.join(note.value for note in record.notes)
 
     def show_all(self):
-        return '\n'.join(str(record) for record in self.data.values())
+        return "\n".join(str(record) for record in self.data.values())
+
 
 
 def show_birthdays_in_period_handler(args):
@@ -214,7 +250,10 @@ def show_birthdays_in_period_handler(args):
 
     for contact in book.values():
         if contact.birthday:
-            birthday_month_day = (contact.birthday.value.month, contact.birthday.value.day)
+            birthday_month_day = (
+                contact.birthday.value.month,
+                contact.birthday.value.day,
+            )
             today_month_day = (today.month, today.day)
             end_month_day = (end_date.month, end_date.day)
 
@@ -236,9 +275,9 @@ def save_data(obj_to_save, file_name):
     def wrapper(func):
         def inner_wrapper(self, *args, **kwargs):
             result = func(self, *args, **kwargs)
-            usr_dir = os.path.expanduser('~')
+            usr_dir = os.path.expanduser("~")
             file_path = os.path.join(usr_dir, file_name)
-            with open(file_path, 'wb') as file:
+            with open(file_path, "wb") as file:
                 pickle.dump(obj_to_save, file)
             return result
 
@@ -248,11 +287,11 @@ def save_data(obj_to_save, file_name):
 
 
 def get_address_book(file_name):
-    usr_dir = os.path.expanduser('~')
-    file_name = os.path.join(usr_dir, 'ab_data.bin')
+    usr_dir = os.path.expanduser("~")
+    file_name = os.path.join(usr_dir, "ab_data.bin")
 
     try:
-        with open(file_name, 'rb') as file:
+        with open(file_name, "rb") as file:
             return pickle.load(file)
     except FileNotFoundError:
         return AddressBook()
@@ -260,7 +299,7 @@ def get_address_book(file_name):
 
 # Handlers
 print("Welcome to the Address Book Assistant")
-file_name = 'ab_data.bin'
+file_name = "ab_data.bin"
 book = get_address_book(file_name)
 
 
@@ -289,6 +328,37 @@ def phone_handler(args):
         return "Invalid command usage: phone <name>"
     name = args[1]
     return book.show_phone(name) or f"Contact {name} not found"
+
+
+
+# New handler for changing address
+def change_address_handler(args):
+    if len(args) != 3:
+        return "Invalid command usage: change_address <name> <new_address>"
+    name, new_address = args[1:]
+    book.change_address(name, new_address)
+    return f"Address for {name} changed"
+
+
+# New handler for changing email
+def change_email_handler(args):
+    if len(args) != 3:
+        return "Invalid command usage: change_email <name> <new_email>"
+    name, new_email = args[1:]
+    book.change_email(name, new_email)
+    return f"Email for {name} changed"
+
+
+# New handler for deleting a record
+def delete_handler(args):
+    if len(args) != 2:
+        return "Invalid command usage: delete <name>"
+    name = args[1]
+    if book.find(name):
+        book.delete(name)
+        return f"Contact {name} deleted"
+    else:
+        return f"Contact {name} not found"
 
 
 def all_handler(args):
@@ -354,17 +424,58 @@ def show_birthdays_next_week_handler(args):
     for contact in book.values():
         if contact.birthday:
             birthday_date = datetime.date(contact.birthday.value.year, contact.birthday.value.month,
-                                          contact.birthday.value.day)
-            if (birthday_date.day, birthday_date.month) >= (today.day, today.month) and (
-            birthday_date.day, birthday_date.month) <= (next_week.day, next_week.month):
+                                          contact.birthday.value.day,
+            )
+            if (birthday_date.day, birthday_date.month) >= (
+                today.day,
+                today.month,) and (
+            birthday_date.day, birthday_date.month) <= (next_week.day, next_week.month,
+            ):
                 birthdays.append(contact)
     if birthdays:
         for birthday in birthdays:
             print(f"Upcoming birthdays within the next week:\n {birthday}")
     else:
-        'No birthdays within the next week.'
+        "No birthdays within the next week."
 
-    return ''
+    return ""
+
+
+# Added show email handler
+def show_email_handler(args):
+    if len(args) != 2:
+        return "Invalid command usage: show_email <name>"
+    name = args[1]
+    email = book.show_email(name)
+    if email:
+        return f"Email for {name}: {email}"
+    else:
+        return f"No email found for {name}"
+
+
+# Added show address handler
+def show_address_handler(args):
+    if len(args) != 2:
+        return "Invalid command usage: show_address <name>"
+    name = args[1]
+    address = book.show_address(name)
+    if address:
+        return f"Address for {name}: {address}"
+    else:
+        return f"No address found for {name}"
+
+
+# Added delete handler
+def delete_handler(args):
+    if len(args) != 2:
+        return "Invalid command usage: delete <name>"
+    name = args[1]
+    if book.find(name):
+        book.delete(name)
+        return f"Contact {name} deleted"
+    else:
+        return f"Contact {name} not found"
+
 
 
 @save_data(book, file_name)
@@ -439,6 +550,11 @@ handlers = {
     'birthdays': show_birthdays_next_week_handler,
     'add-address': add_address_hadler,
     'add-email': add_email_handler,
+    "change_email": change_email_handler,
+    "change_address": change_address_handler,
+    "show_email": show_email_handler,
+    "show_address": show_address_handler,
+    "delete": delete_handler,
     'add-note': add_note_handler,
     'edit-note': edit_note_handler,
     'note': show_note_handler,
