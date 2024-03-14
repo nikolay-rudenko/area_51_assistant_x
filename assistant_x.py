@@ -158,13 +158,21 @@ class Record:
         return (birthday_date - today).days
 
     def __str__(self):
-        return (
-            f"Contact name: {self.name.value}, "
-            f"phones: {'; '.join(p.value for p in self.phones)}"
-            f", birthday: {self.birthday}" if self.birthday else ("No birthday"
-                                                                     f"address: {self.address}" if self.address else "No address"
-                                                                                                                     f"email: {self.email}" if self.email else "No email"
-                ))
+        result = f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        if hasattr(self, 'birthday') and self.birthday:
+            result += f", birthday: {self.birthday.value.strftime('%d.%m.%Y')}"
+        else:
+            result += ", No birthday"
+        if hasattr(self, 'address') and self.address:
+            result += f", address: {self.address.value}"
+        else:
+            result += ", No address"
+        if hasattr(self, 'email') and self.email:
+            result += f", email: {self.email.value}"
+        else:
+            result += ", No email"
+        return result
+
 
 
 class AddressBook(UserDict):
@@ -236,6 +244,8 @@ class AddressBook(UserDict):
             return '; '.join(note.value for note in record.notes)
 
     def show_all(self):
+        if not self.data:
+            return "Contacts were not added"
         return "\n".join(str(record) for record in self.data.values())
 
 
@@ -400,7 +410,7 @@ def add_address_hadler(args):
 @save_data(book, file_name)
 def add_email_handler(args):
     if len(args) != 3:
-        return "Invalid command usage: add_email <name> <email>"
+        return "Invalid command usage: add-email <name> <email>"
     name, email = args[1:]
     contact = book.find(name)
     if contact:
