@@ -16,6 +16,10 @@ class Name(Field):
     pass
 
 
+class Note(Field):
+    pass
+
+
 class Phone(Field):
     def __init__(self, value):
         super().__init__(value)
@@ -54,12 +58,37 @@ class Birthday(Field):
 
 
 class Record:
+    """
+    Цей клас описує запис у адресній книзі.
+
+    Атрибути:
+        name (str): Ім'я контакту.
+        phones (list): Список номерів телефонів контакту.
+        birthday (datetime.date): Дата народження контакту.
+        address (str): Адреса контакту.
+        email (str): Адреса електронної пошти контакту.
+        notes (list): Список нотаток про контакт.
+
+    Методи:
+        add_phone(phone_number: str): Додати номер телефону до списку телефонів.
+        remove_phone(phone_number: str): Видалити номер телефону зі списку телефонів.
+        edit_phone(old_number: str, new_number: str): Змінити номер телефону в списку.
+        find_phone(phone_number: str): Знайти номер телефону в списку.
+        add_birthday(birthday: datetime.date): Додати дату народження.
+        days_to_birthday(): Розрахувати дні до дня народження.
+        show_notes(): Показати всі нотатки.
+        add_note(note: str): Додати нотатку.
+        edit_note(note_index: int, new_note: str): Змінити нотатку.
+        remove_note(note_index: int): Видалити нотатку.
+    """
+
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
         self.birthday = None
         self.address = None
         self.email = None
+        self.notes = []
 
     def add_phone(self, phone_number):
         self.phones.append(Phone(phone_number))
@@ -69,6 +98,9 @@ class Record:
 
     def add_email(self, email):
         self.email = Email(email)
+
+    def add_note(self, note):
+        self.notes.append(Note(note))
 
     def remove_phone(self, phone_number):
         self.phones = [phone for phone in self.phones if phone.value != phone_number]
@@ -83,6 +115,19 @@ class Record:
         return next(
             (phone for phone in self.phones if phone.value == phone_number), None
         )
+
+    def edit_note(self, note_index, new_note):
+        if note_index < 0 or note_index >= len(self.notes):
+            return "Invalid note index"
+        self.notes[note_index] = Note(new_note)
+
+    def remove_note(self, note_index):
+        if note_index < 0 or note_index >= len(self.notes):
+            return "Invalid note index"
+        del self.notes[note_index]
+
+    def show_notes(self):
+        return '; '.join(note.value for note in self.notes)
 
     def add_birthday(self, birthday):
         self.birthday = birthday
@@ -110,17 +155,29 @@ class Record:
         return (
             f"Contact name: {self.name.value}, "
             f"phones: {'; '.join(p.value for p in self.phones)}"
-            f"birthday: {self.birthday}"
-            if self.birthday
-            else (
-                "No birthday" f"address: {self.address}"
-                if self.address
-                else "No address" f"email: {self.email}" if self.email else "No email"
-            )
-        )
+            f", birthday: {self.birthday}" if self.birthday else ("No birthday"
+                                                                     f"address: {self.address}" if self.address else "No address"
+                                                                                                                     f"email: {self.email}" if self.email else "No email"
+                ))
 
 
 class AddressBook(UserDict):
+    """
+        Цей клас описує адресну книгу.
+
+        Атрибути:
+            data (dict): Словник, де ключем є ім'я контакту, а значенням - екземпляр класу Record.
+
+        Методи:
+            add_record(record: Record): Додати запис до адресної книги.
+            find(name: str): Знайти запис за ім'ям.
+            delete(name: str): Видалити запис за ім'ям.
+            change_phone(name: str, new_phone: str): Змінити номер телефону для контакту.
+            show_phone(name: str): Показати номер телефону для контакту.
+            show_notes(name: str): Показати всі нотатки для контакту.
+            show_all(): Показати всі записи в адресній книзі.
+        """
+
     def add_record(self, record):
         self.data[record.name.value] = record
 
@@ -167,8 +224,14 @@ class AddressBook(UserDict):
         else:
             return "No address"
 
+    def show_notes(self, name):
+        record = self.data.get(name)
+        if record:
+            return '; '.join(note.value for note in record.notes)
+
     def show_all(self):
         return "\n".join(str(record) for record in self.data.values())
+
 
 
 def show_birthdays_in_period_handler(args):
@@ -267,6 +330,7 @@ def phone_handler(args):
     return book.show_phone(name) or f"Contact {name} not found"
 
 
+
 # New handler for changing address
 def change_address_handler(args):
     if len(args) != 3:
@@ -359,17 +423,13 @@ def show_birthdays_next_week_handler(args):
 
     for contact in book.values():
         if contact.birthday:
-            birthday_date = datetime.date(
-                contact.birthday.value.year,
-                contact.birthday.value.month,
-                contact.birthday.value.day,
+            birthday_date = datetime.date(contact.birthday.value.year, contact.birthday.value.month,
+                                          contact.birthday.value.day,
             )
             if (birthday_date.day, birthday_date.month) >= (
                 today.day,
-                today.month,
-            ) and (birthday_date.day, birthday_date.month) <= (
-                next_week.day,
-                next_week.month,
+                today.month,) and (
+            birthday_date.day, birthday_date.month) <= (next_week.day, next_week.month,
             ):
                 birthdays.append(contact)
     if birthdays:
@@ -417,6 +477,60 @@ def delete_handler(args):
         return f"Contact {name} not found"
 
 
+
+@save_data(book, file_name)
+def add_note_handler(args):
+    if len(args) != 3:
+        return "Invalid command usage: add-note <name> <note>"
+    name, note = args[1:]
+    contact = book.find(name)
+    if contact:
+        contact.add_note(note)
+        return f"Note added for {name}"
+    else:
+        return f"Contact {name} not found"
+
+
+@save_data(book, file_name)
+def edit_note_handler(args):
+    if len(args) < 4:
+        return "Invalid command usage: edit-note <name> <note_index> <new_note>"
+    name = args[1]
+    note_index = int(args[2])
+    new_note = ' '.join(args[3:])
+    contact = book.find(name)
+    if contact:
+        result = contact.edit_note(note_index, new_note)
+        if result == "Invalid note index":
+            return f"Invalid note index for contact {name}"
+        else:
+            return f"Note edited for {name}"
+
+
+def show_note_handler(args):
+    if len(args) != 2:
+        return "Invalid command usage: note <name>"
+    name = args[1]
+    return book.show_notes(name) or f"Contact {name} not found"
+
+
+@save_data(book, file_name)
+def delete_note_handler(args):
+    if len(args) != 3:
+        return "Invalid command usage: delete-note <name> <index>"
+    name = args[1]
+    note_index = int(args[2])
+    contact = book.find(name)
+    if contact:
+        result = contact.remove_note(note_index)
+        if result == "Invalid note index":
+            return f"Invalid note index for contact {name}"
+        else:
+            return f"Note deleted for {name}"
+    else:
+        return f"Contact {name} not found"
+
+
 def hello_handler(args):
     return "Hello, how can I assist you today?"
 
@@ -425,26 +539,29 @@ def close_handler(args):
     exit(0)
 
 
-# Expanded with change_email, change_address, show_email, show_address, delete
 handlers = {
-    "add": add_handler,
-    "change": change_handler,
-    "phone": phone_handler,
-    "all": all_handler,
-    "add-birthday": add_birthday_handler,
-    "show-birthday": show_birthday_handler,
-    "birthdays-in-period": show_birthdays_in_period_handler,
-    "birthdays": show_birthdays_next_week_handler,
-    "add-address": add_address_hadler,
-    "add-email": add_email_handler,
+    'add': add_handler,
+    'change': change_handler,
+    'phone': phone_handler,
+    'all': all_handler,
+    'add-birthday': add_birthday_handler,
+    'show-birthday': show_birthday_handler,
+    'birthdays-in-period': show_birthdays_in_period_handler,
+    'birthdays': show_birthdays_next_week_handler,
+    'add-address': add_address_hadler,
+    'add-email': add_email_handler,
     "change_email": change_email_handler,
     "change_address": change_address_handler,
     "show_email": show_email_handler,
     "show_address": show_address_handler,
     "delete": delete_handler,
-    "hello": hello_handler,
-    "close": close_handler,
-    "exit": close_handler,
+    'add-note': add_note_handler,
+    'edit-note': edit_note_handler,
+    'note': show_note_handler,
+    'delete-note': delete_note_handler,
+    'hello': hello_handler,
+    'close': close_handler,
+    'exit': close_handler,
 }
 
 while True:
