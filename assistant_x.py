@@ -215,10 +215,9 @@ class AddressBook(UserDict):
             record.add_email(new_email)
 
     # New method to change address
-    def change_address(self, name, new_address):
-        record = self.data.get(name)
-        if record:
-            record.add_address(new_address)
+    def change_address(self, new_address):
+        self.address = new_address
+
 
     def show_phone(self, name):
         record = self.data.get(name)
@@ -382,11 +381,16 @@ def search_handler(args):
 
 # New handler for changing address
 def change_address_handler(args):
-    if len(args) != 3:
+    if len(args) < 3:
         return "Invalid command usage: change_address <name> <new_address>"
-    name, new_address = args[1:]
-    book.change_address(name, new_address)
-    return f"Address for {name} changed"
+    command = ' '.join(args)
+    parts = command.split(" ", 2)
+    name, new_address = parts[1:]
+    contact = book.find(name)
+    if contact:
+        contact.add_address(new_address)
+    return f"Address for {name} changed to {new_address}"
+
 
 
 # New handler for changing email
@@ -421,9 +425,11 @@ def all_handler(args):
 
 @save_data(book, file_name)
 def add_address_hadler(args):
-    if len(args) != 3:
+    if len(args) < 3:
         return "Invalid command usage: add_address <name> <address>"
-    name, address = args[1:]
+    command = ' '.join(args)
+    parts = command.split(" ", 2)
+    name, address = parts[1:]
     contact = book.find(name)
     if contact:
         contact.add_address(address)
