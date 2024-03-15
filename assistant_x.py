@@ -638,10 +638,14 @@ print_help()
 try:
     while True:
         command = input("Enter a command >>>  ").split()
-        handler = handlers.get(command[0])
-        if handler:
-            print(handler(command))
+        if command:
+            handler = handlers.get(command[0])
+            if handler:
+                print(handler(command))
+            else:
+                print("Unknown command")
         else:
-            print("Unknown command")
+            print("Please enter a command.")
+
 except KeyboardInterrupt:
     close_handler()
