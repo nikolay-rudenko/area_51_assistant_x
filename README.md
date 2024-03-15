@@ -1,6 +1,6 @@
 # Address Book Assistant
 
-The Address Book Assistant is a console-based application for managing contact information. It allows users to add, modify, and search for contacts. Each contact can include details such as name, phone number, address, email, birthday, and notes.
+A simple console-based address book assistant. Manage your contacts with functionalities like creating, editing, searching, and deleting entries, as well as storing notes, birthdays, addresses, and emails.
 
 ## Features
 
@@ -9,11 +9,37 @@ The Address Book Assistant is a console-based application for managing contact i
 - **Notes**: Attach notes to contacts for additional information.
 - **Persistence**: Save and load contact information using pickle for data persistence.
 
-## Installation
+### Contact Management:
 
-No installation is required. Ensure you have Python 3.x installed on your system to run the script.
+* Add new contacts
+* Modify contact name and phone number
+* Delete contacts
+
+### Birthdays:
+
+* Add birthdate information to contacts
+* View upcoming birthdays within a specified period
+
+### Notes:
+
+* Attach notes to contacts
+* Edit existing notes
+* Delete notes
+
+### Addresses and Emails:
+
+* Store a contact's address
+* Store a contact's email address
+
+### Search:
+
+* Find contacts by name or phone number
+
+## Installation
+No installation is necessary. Ensure you have Python 3.x installed on your system.
 
 ## Usage
+Download or copy the code content into a file named assistant_x.py
 
 To use the Address Book Assistant, run the script in your terminal or command prompt:
 
@@ -22,20 +48,26 @@ python assistant_x.py
 ```
 ### Commands
 
-* Add Contact: add <name> <phone>
-* Change Phone: change <name> <new_phone>
-* Add Birthday: add-birthday <name> <DD.MM.YYYY>
-* Add Address: add-address <name> <address>
-* Add Email: add-email <name> <email>
-* Add Note: add-note <name> <note>
-* Edit Note: edit-note <name> <note_index> <new_note>
-* Delete Note: delete-note <name> <index>
-* Show Phone: phone <name>
-* Show All Contacts: all
-* Show Contact's Notes: note <name>
-* Show Contact's Birthday: show-birthday <name>
-* Find Upcoming Birthdays: birthdays-in-period <days>
-* Exit: exit or close
+* add `<name> <phone>` - Add a new contact
+* change-numer `<name> <new_phone>` - Change a contact's phone number
+* find `<query>` - Search for a contact by name or phone number
+* all - Display all contacts
+* add-birthday `<name> <DD.MM.YYYY>` - Add a contact's birthdate
+* show-birthday `<name>` - Show a contact's birthdate
+* birthdays-in-period `<days>` - Show birthdays within the specified period
+* add-address `<name> <address>` - Add an address for a contact
+* add-email `<name> <email>` - Add an email address for a contact
+* change-email `<name> <new_email>` - Modify an email address
+* change-address `<name> <new_address>` - Modify an address
+* show-email `<name>` - Show an email address
+* show-address `<name>` - Show an address
+* delete-contact `<name>` - Delete a contact
+* add-note <name> `<note>` - Add a note to a contact
+* edit-note `<name> <note_index> <new_note>` - Edit a contact's note
+* note `<name>` - Show all notes for a contact
+* delete-note `<name> <index>` - Delete a note
+* help - Show the list of commands
+* close or exit - Exit the program
 
 ### Example
 
