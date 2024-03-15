@@ -608,7 +608,7 @@ def close_handler(args = None):
 
 handlers = {
     'add': add_handler,
-    'change': change_handler,
+    'change-number': change_handler,
     'find': search_handler,
     'all': all_handler,
     'add-birthday': add_birthday_handler,
@@ -617,11 +617,11 @@ handlers = {
     'birthdays': show_birthdays_next_week_handler,
     'add-address': add_address_hadler,
     'add-email': add_email_handler,
-    "change_email": change_email_handler,
-    "change_address": change_address_handler,
-    "show_email": show_email_handler,
-    "show_address": show_address_handler,
-    "delete": delete_handler,
+    "change-email": change_email_handler,
+    "change-address": change_address_handler,
+    "show-email": show_email_handler,
+    "show-address": show_address_handler,
+    "delete-contact": delete_handler,
     'add-note': add_note_handler,
     'edit-note': edit_note_handler,
     'note': show_note_handler,
@@ -638,10 +638,14 @@ print_help()
 try:
     while True:
         command = input("Enter a command >>>  ").split()
-        handler = handlers.get(command[0])
-        if handler:
-            print(handler(command))
+        if command:
+            handler = handlers.get(command[0])
+            if handler:
+                print(handler(command))
+            else:
+                print("Unknown command")
         else:
-            print("Unknown command")
+            print("Please enter a command.")
+
 except KeyboardInterrupt:
     close_handler()
