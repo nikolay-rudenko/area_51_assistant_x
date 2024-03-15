@@ -1,3 +1,4 @@
+from helpers import print_app_intro, print_help, print_contacts_table, get_alien
 from collections import UserDict
 import datetime
 import os
@@ -246,7 +247,23 @@ class AddressBook(UserDict):
     def show_all(self):
         if not self.data:
             return "Contacts were not added"
-        return "\n".join(str(record) for record in self.data.values())
+        return self.data.values()
+
+
+    def find_contacts(self, search_query):
+        search_results = []
+        is_phone = search_query.isdigit()
+
+        for record in self.data.values():
+            if is_phone:
+                # Search by phone
+                if any(search_query in phone.value for phone in record.phones):
+                    search_results.append(record)
+            else:
+                # Search by name
+                if search_query.lower() in record.name.value.lower():
+                    search_results.append(record)
+        return search_results
 
 
 
@@ -314,7 +331,6 @@ def get_address_book(file_name):
 
 
 # Handlers
-print("Welcome to the Address Book Assistant")
 file_name = "ab_data.bin"
 book = get_address_book(file_name)
 
@@ -352,12 +368,16 @@ def change_handler(args):
     return f"Phone number for {name} changed"
 
 
-def phone_handler(args):
+def search_handler(args):
     if len(args) != 2:
-        return "Invalid command usage: phone <name>"
-    name = args[1]
-    return book.show_phone(name) or f"Contact {name} not found"
-
+        return "Invalid command usage: phone <query>"
+    query = args[1]
+    contacts = book.find_contacts(query)
+    if contacts:
+        print_contacts_table(contacts)
+        return ''
+    else:
+        return "No contacts found"
 
 
 # New handler for changing address
@@ -391,7 +411,12 @@ def delete_handler(args):
 
 
 def all_handler(args):
-    return book.show_all()
+    result = book.show_all()
+    if result != "Contacts were not added":
+        print_contacts_table(result)
+        return ''
+    else:
+        return result
 
 
 @save_data(book, file_name)
@@ -564,18 +589,21 @@ def delete_note_handler(args):
         return f"Contact {name} not found"
 
 
-def hello_handler(args):
-    return "Hello, how can I assist you today?"
+def help_handler(args):
+    print_help()
+    return ''
 
 
-def close_handler(args):
+def close_handler(args = None):
+    print("Goodbye! 🛸")
+    print(get_alien())
     exit(0)
 
 
 handlers = {
     'add': add_handler,
     'change': change_handler,
-    'phone': phone_handler,
+    'find': search_handler,
     'all': all_handler,
     'add-birthday': add_birthday_handler,
     'show-birthday': show_birthday_handler,
@@ -592,15 +620,22 @@ handlers = {
     'edit-note': edit_note_handler,
     'note': show_note_handler,
     'delete-note': delete_note_handler,
-    'hello': hello_handler,
+    'help': help_handler,
     'close': close_handler,
     'exit': close_handler,
 }
 
-while True:
-    command = input().split()
-    handler = handlers.get(command[0])
-    if handler:
-        print(handler(command))
-    else:
-        print("Unknown command")
+
+print_app_intro()
+print("Welcome to the Address Book Assistant X!")
+print_help()
+try:
+    while True:
+        command = input("Enter a command >>>  ").split()
+        handler = handlers.get(command[0])
+        if handler:
+            print(handler(command))
+        else:
+            print("Unknown command")
+except KeyboardInterrupt:
+    close_handler()
