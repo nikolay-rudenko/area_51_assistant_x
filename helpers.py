@@ -6,7 +6,8 @@ def print_contacts_table(contact_list):
         ['Name', 'Phone Numbers', 'Birthday', 'Address', 'Email']
     ]
     for contact in contact_list:
-        result.append([contact.name.value, ', '.join(list(map(lambda x: x.value, contact.phones))), contact.birthday, contact.address, contact.email])
+        result.append([contact.name.value, ', '.join(list(map(lambda x: x.value, contact.phones))), contact.birthday,
+                       contact.address, contact.email])
     pretty_print_table(result)
 
 
@@ -61,10 +62,10 @@ def pretty_print_table(rows, line_between_rows=True):
     row_fstring = ' │ '.join("{: <%s}" % n for n in max_col_lens)
 
     for i, row in enumerate(rows):
-      print('│', row_fstring.format(*map(str, row)), '│')
-      
-      if line_between_rows and i < len(rows) - 1:
-        print(rows_separator)
+        print('│', row_fstring.format(*map(str, row)), '│')
+
+        if line_between_rows and i < len(rows) - 1:
+            print(rows_separator)
 
     # print the table's bottom border
     print('└' + '┴'.join('─' * (n + 2) for n in max_col_lens) + '┘')
@@ -82,7 +83,7 @@ def print_app_intro():
 
 
 def get_alien():
-  return '''
+    return '''
                                                                                   
                                     ▄▄▄▄▄▄                                     
                           ▄▄▄█████████████████████▄▄,                           
