@@ -4,6 +4,16 @@ import re
 
 
 class Field:
+    """
+    Base class for representing various types of contact data.
+
+    Attributes:
+        value: Variable that holds the value of the given type.
+
+    Methods:
+        __str__(): Converts the field value to a string.
+    """
+
     def __init__(self, value):
         self.value = value
 
@@ -12,14 +22,33 @@ class Field:
 
 
 class Name(Field):
+    """
+    Subclass of Field for storing the name of a contact.
+    """
+
     pass
 
 
 class Note(Field):
+    """
+    Subclass of Field for storing a note or comment about a contact.
+    """
+
     pass
 
 
 class Phone(Field):
+    """
+    Subclass of Field for storing the phone number of a contact.
+
+    Attributes:
+        value: Variable that holds the phone number.
+
+    Methods:
+        __init__(): Phone number initialization, with validation.
+        validate(): Check if the phone number is in 10-digit format.
+    """
+
     def __init__(self, value):
         super().__init__(value)
         if not self.validate():
@@ -30,10 +59,25 @@ class Phone(Field):
 
 
 class Address(Field):
+    """
+    Subclass of Field for storing the address of a contact.
+    """
+
     pass
 
 
 class Email(Field):
+    """
+    Subclass of Field for storing the email address of a contact.
+
+    Attributes:
+        value: Variable that holds the email.
+
+    Methods:
+        __init__(): Email initialization, with validation.
+        validate(): Check email for compliance with the standard format.
+    """
+
     def __init__(self, value):
         super().__init__(value)
         if not self.validate():
@@ -45,6 +89,17 @@ class Email(Field):
 
 
 class Birthday(Field):
+    """
+    Subclass of Field for storing the date of birth of a contact.
+
+    Attributes:
+        value: Variable that holds the date of birth.
+
+    Methods:
+        __init__(): Date of birth initialization, with validation.
+        validate(): Check if the date of birth is in DD.MM.YYYY format.
+    """
+
     def __init__(self, date_string):
         self.value = self.validate(date_string)
         if not self.value:
@@ -59,27 +114,27 @@ class Birthday(Field):
 
 class Record:
     """
-    Цей клас описує запис у адресній книзі.
+    This class describes an entry in the address book.
 
-    Атрибути:
-        name (str): Ім'я контакту.
-        phones (list): Список номерів телефонів контакту.
-        birthday (datetime.date): Дата народження контакту.
-        address (str): Адреса контакту.
-        email (str): Адреса електронної пошти контакту.
-        notes (list): Список нотаток про контакт.
+    Attributes:
+        name (Name): Contact name.
+        phones (list): List of phone numbers for the contact.
+        birthday (Birthday): Contact's date of birth.
+        address (Address): Contact's address.
+        email (Email): Contact's email address.
+        notes (list): List of notes about the contact.
 
-    Методи:
-        add_phone(phone_number: str): Додати номер телефону до списку телефонів.
-        remove_phone(phone_number: str): Видалити номер телефону зі списку телефонів.
-        edit_phone(old_number: str, new_number: str): Змінити номер телефону в списку.
-        find_phone(phone_number: str): Знайти номер телефону в списку.
-        add_birthday(birthday: datetime.date): Додати дату народження.
-        days_to_birthday(): Розрахувати дні до дня народження.
-        show_notes(): Показати всі нотатки.
-        add_note(note: str): Додати нотатку.
-        edit_note(note_index: int, new_note: str): Змінити нотатку.
-        remove_note(note_index: int): Видалити нотатку.
+    Methods:
+        add_phone(phone_number: str): Add a phone number to the phone list.
+        remove_phone(phone_number: str): Remove a phone number from the list.
+        edit_phone(old_number: str, new_number: str): Change a phone number in the list.
+        find_phone(phone_number: str): Find a phone number in the list.
+        add_birthday(birthday: datetime.date): Add date of birth.
+        days_to_birthday(): Calculate days until birthday.
+        show_notes(): Show all notes.
+        add_note(note: str): Add a note.
+        edit_note(note_index: int, new_note: str): Edit a note.
+        remove_note(note_index: int): Delete a note.
     """
 
     def __init__(self, name):
@@ -147,7 +202,7 @@ class Record:
         )
 
         if (
-            birthday_date < today
+                birthday_date < today
         ):  # If birthday has passed this year, calculate for next year
             birthday_date = datetime.date(
                 today.year + 1, self.birthday.value.month, self.birthday.value.day
@@ -174,20 +229,25 @@ class Record:
 
 class AddressBook(UserDict):
     """
-        Цей клас описує адресну книгу.
+    This class represents the entire address book.
 
-        Атрибути:
-            data (dict): Словник, де ключем є ім'я контакту, а значенням - екземпляр класу Record.
+    Attributes:
+        data (dict): Dictionary where the key is the contact's name, and the value is an instance of the Record class.
 
-        Методи:
-            add_record(record: Record): Додати запис до адресної книги.
-            find(name: str): Знайти запис за ім'ям.
-            delete(name: str): Видалити запис за ім'ям.
-            change_phone(name: str, new_phone: str): Змінити номер телефону для контакту.
-            show_phone(name: str): Показати номер телефону для контакту.
-            show_notes(name: str): Показати всі нотатки для контакту.
-            show_all(): Показати всі записи в адресній книзі.
-        """
+    Methods:
+        add_record(record: Record): Adds a record to the address book.
+        find(name: str): Finds a record by name.
+        delete(name: str): Deletes a record by name.
+        change_phone(name: str, new_phone: str): Changes a contact's phone number.
+        change_email(name, new_email): Changes a contact's email address.
+        change_address(name, new_address): Changes a contact's address.
+        show_phone(name: str): Displays a contact's phone number(s).
+        show_email(name: str): Displays a contact's email address.
+        show_address(name: str): Displays a contact's address.
+        show_notes(name: str): Displays a contact's notes.
+        show_all(): Displays all records in the address book.
+        find_contacts(search_query): Finds contacts based on their name or phone number.
+    """
 
     def add_record(self, record):
         self.data[record.name.value] = record
@@ -213,7 +273,6 @@ class AddressBook(UserDict):
     # New method to change address
     def change_address(self, new_address):
         self.address = new_address
-
 
     def show_phone(self, name):
         record = self.data.get(name)
@@ -248,7 +307,6 @@ class AddressBook(UserDict):
         if not self.data:
             return "Contacts were not added"
         return self.data.values()
-
 
     def find_contacts(self, search_query):
         search_results = []
