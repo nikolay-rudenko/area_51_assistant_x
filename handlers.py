@@ -41,9 +41,17 @@ def get_address_book():
 # Handler functions
 @save_book
 def add_handler(args, book):
-    if len(args) != 3:
+    if len(args) < 3:
         return "Invalid command usage: add <name> <phone>"
-    name, phone = args[1:]
+    command = ' '.join(args)
+    parts = command.split(" ", 2)
+    name, phone = parts[1:]
+
+    if len(args) > 3:
+        parts = parts[2].split(" ", 2)
+        name += ' '+ parts[0]
+        phone = parts[1]
+
     record = Record(name)
 
     try:
