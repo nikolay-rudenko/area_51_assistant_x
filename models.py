@@ -296,7 +296,12 @@ class AddressBook(UserDict):
     def show_notes(self, name):
         record = self.data.get(name)
         if record:
-            return '; '.join(note.value for note in record.notes)
+            if record.notes:
+                return '; '.join(note.value for note in record.notes)
+            else:
+                return "No notes found for this contact"
+        else:
+            return f"Contact {name} not found"
 
     def show_all(self):
         if not self.data:
