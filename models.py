@@ -25,7 +25,7 @@ class Name(Field):
     """
     Subclass of Field for storing the name of a contact.
     """
-        
+
     pass
 
 
@@ -202,7 +202,7 @@ class Record:
         )
 
         if (
-            birthday_date < today
+                birthday_date < today
         ):  # If birthday has passed this year, calculate for next year
             birthday_date = datetime.date(
                 today.year + 1, self.birthday.value.month, self.birthday.value.day
@@ -274,7 +274,6 @@ class AddressBook(UserDict):
     def change_address(self, new_address):
         self.address = new_address
 
-
     def show_phone(self, name):
         record = self.data.get(name)
         if record:
@@ -303,7 +302,6 @@ class AddressBook(UserDict):
         if not self.data:
             return "Contacts were not added"
         return self.data.values()
-
 
     def find_contacts(self, search_query):
         search_results = []

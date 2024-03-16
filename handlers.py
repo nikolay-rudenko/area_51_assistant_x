@@ -22,6 +22,7 @@ def save_book(func):
             with open(file_path, "wb") as file:
                 pickle.dump(book, file)
         return result
+
     return wrapper
 
 
@@ -51,7 +52,7 @@ def add_handler(args, book):
             raise ValueError("Invalid phone number")
     except ValueError:
         return "Invalid phone number. Please try again."
-    
+
     record.add_phone(phone)
     book.add_record(record)
     return f"Contact {name} added"
@@ -67,7 +68,14 @@ def change_handler(args, book):
         Phone(new_phone)
     except ValueError:
         return "Invalid phone number. Please try again."
-    
+
+    # Attempt to find the contact
+    contact = book.find(name)
+
+    # If contact is not found, return an error message
+    if not contact:
+        return f"Contact {name} not found"
+
     book.change_phone(name, new_phone)
     return f"Phone number for {name} changed"
 
@@ -92,11 +100,17 @@ def change_address_handler(args, book):
     command = ' '.join(args)
     parts = command.split(" ", 2)
     name, new_address = parts[1:]
-    contact = book.find(name)
-    if contact:
-        contact.add_address(new_address)
-    return f"Address for {name} changed to {new_address}"
 
+    # Attempt to find the contact
+    contact = book.find(name)
+
+    # If contact is not found, return an error message
+    if not contact:
+        return f"Contact {name} not found"
+    else:
+        contact.add_address(new_address)
+
+    return f"Address for {name} changed to {new_address}"
 
 
 # New handler for changing email
@@ -105,6 +119,14 @@ def change_email_handler(args, book):
     if len(args) != 3:
         return "Invalid command usage: change_email <name> <new_email>"
     name, new_email = args[1:]
+
+    # Attempt to find the contact
+    contact = book.find(name)
+
+    # If contact is not found, return an error message
+    if not contact:
+        return f"Contact {name} not found"
+
     book.change_email(name, new_email)
     return f"Email for {name} changed"
 
@@ -197,12 +219,12 @@ def show_birthdays_next_week_handler(args, book):
         if contact.birthday:
             birthday_date = datetime.date(contact.birthday.value.year, contact.birthday.value.month,
                                           contact.birthday.value.day,
-            )
+                                          )
             if (birthday_date.day, birthday_date.month) >= (
-                today.day,
-                today.month,) and (
-            birthday_date.day, birthday_date.month) <= (next_week.day, next_week.month,
-            ):
+                    today.day,
+                    today.month,) and (
+                    birthday_date.day, birthday_date.month) <= (next_week.day, next_week.month,
+                                                                ):
                 birthdays.append(contact)
     if birthdays:
         for birthday in birthdays:
@@ -211,6 +233,7 @@ def show_birthdays_next_week_handler(args, book):
         "No birthdays within the next week."
 
     return ""
+
 
 def show_birthdays_in_period_handler(args, book):
     if len(args) != 2:
@@ -338,12 +361,12 @@ def delete_note_handler(args, book):
         return f"Contact {name} not found"
 
 
-def help_handler(args = None, book = None):
+def help_handler(args=None, book=None):
     print_help()
     return ''
 
 
-def close_handler(args = None, book = None):
+def close_handler(args=None, book=None):
     print("Goodbye! 🛸")
     print(get_alien())
     exit(0)

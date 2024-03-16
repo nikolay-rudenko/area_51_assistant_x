@@ -4,6 +4,7 @@ from models import *
 
 file_name = "ab_data.bin"
 
+
 def main():
     book = get_address_book()
 
@@ -43,7 +44,7 @@ def main():
             if command:
                 handler = handlers.get(command[0])
                 if handler:
-                    print(handler(command, book = book))
+                    print(handler(command, book=book))
                 else:
                     print("Unknown command")
             else:
