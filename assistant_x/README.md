@@ -36,15 +36,19 @@ A simple console-based address book assistant. Manage your contacts with functio
 * Find contacts by name or phone number
 
 ## Installation
-No installation is necessary. Ensure you have Python 3.x installed on your system.
+Ensure you have Python 3.x installed on your system.
+Open in the terminal, directory containing setup.py
+Run command:
+
+```bash
+pip install -e .
+```
 
 ## Usage
-Download or copy the code content into a file named assistant_x.py
-
 To use the Address Book Assistant, run the script in your terminal or command prompt:
 
 ```bash
-python assistant_x.py
+assistant_x
 ```
 ### Commands
 

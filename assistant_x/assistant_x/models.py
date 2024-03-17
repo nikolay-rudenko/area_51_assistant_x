@@ -1,5 +1,7 @@
 from collections import UserDict
 import datetime
+import os
+import pickle
 import re
 
 
@@ -248,6 +250,19 @@ class AddressBook(UserDict):
         show_all(): Displays all records in the address book.
         find_contacts(search_query): Finds contacts based on their name or phone number.
     """
+
+
+    # def __init__(self):
+    #     super().__init__()
+    #     # restore data from file
+    #     usr_dir = os.path.expanduser("~")
+    #     file_path = os.path.join(usr_dir, "ab_data.bin")
+    #     try:
+    #         with open(file_path, "rb") as file:
+    #             self.data = pickle.load(file)
+    #     except FileNotFoundError:
+    #         self.data = {}
+
 
     def add_record(self, record):
         self.data[record.name.value] = record

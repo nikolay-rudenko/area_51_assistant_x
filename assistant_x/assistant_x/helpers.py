@@ -1,4 +1,4 @@
-from colorama import Fore, Style
+import colorama
 
 
 def print_contacts_table(contact_list):
@@ -72,7 +72,8 @@ def pretty_print_table(rows, line_between_rows=True):
 
 
 def print_app_intro():
-    print(Fore.GREEN + Style.BRIGHT + '''
+    colorama.init()
+    print(colorama.Fore.GREEN + colorama.Style.BRIGHT + '''
  █████╗ ███████╗███████╗██╗███████╗████████╗ █████╗ ███╗   ██╗████████╗    ██╗  ██╗
 ██╔══██╗██╔════╝██╔════╝██║██╔════╝╚══██╔══╝██╔══██╗████╗  ██║╚══██╔══╝    ╚██╗██╔╝
 ███████║███████╗███████╗██║███████╗   ██║   ███████║██╔██╗ ██║   ██║        ╚███╔╝ 
