@@ -1,6 +1,5 @@
-from helpers import get_alien, print_contacts_table, print_help
-from models import Birthday, Email, Phone, Record, AddressBook
-from assistant_x import file_name
+from assistant_x.helpers import get_alien, print_contacts_table, print_help
+from assistant_x.models import Birthday, Email, Phone, Record, AddressBook
 from functools import wraps
 import datetime
 import pickle
@@ -11,7 +10,7 @@ import os
 def save_book(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        global file_name
+        file_name = "ab_data.bin"
         book = kwargs.get("book")
         result = func(*args, **kwargs)
         if not book:
@@ -28,12 +27,12 @@ def save_book(func):
 
 # Handle the address book
 def get_address_book():
-    global file_name
     usr_dir = os.path.expanduser("~")
-    file_path = os.path.join(usr_dir, file_name)
+    file_path = os.path.join(usr_dir, "ab_data.bin")
 
     try:
         with open(file_path, "rb") as file:
+            # return AddressBook()
             return pickle.load(file)
     except FileNotFoundError:
         return AddressBook()

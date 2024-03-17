@@ -1,8 +1,6 @@
-from helpers import print_app_intro, print_help
-from handlers import *
-from models import *
-
-file_name = "ab_data.bin"
+from assistant_x.helpers import print_app_intro, print_help
+from assistant_x.handlers import *
+from assistant_x.models import *
 
 
 def main():
