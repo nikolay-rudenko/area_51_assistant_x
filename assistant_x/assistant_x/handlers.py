@@ -212,7 +212,8 @@ def show_birthday_handler(args, book):
     name = args[1]
     contact = book.find(name)
     if contact and contact.birthday:
-        return f"Birthday for {name}: {contact.birthday}"
+        birthday_date = contact.birthday.value.strftime('%d.%m.%Y')
+        return f"Birthday for {name}: {birthday_date}"
     else:
         return f"Contact {name} does not have a birthday or not found"
 
