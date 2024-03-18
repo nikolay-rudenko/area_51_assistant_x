@@ -1,10 +1,12 @@
 from assistant_x.helpers import print_app_intro, print_help
 from assistant_x.handlers import *
 from assistant_x.models import *
+from assistant_x.models import AddressBook
+
 
 
 def main():
-    book = get_address_book()
+    book = AddressBook()
 
     print_app_intro()
     print("Welcome to the Address Book Assistant X!")

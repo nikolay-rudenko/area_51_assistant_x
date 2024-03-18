@@ -14,7 +14,7 @@ def save_book(func):
         book = kwargs.get("book")
         result = func(*args, **kwargs)
         if not book:
-            print("Address cannot be saved. Please try again.")
+            print("Contact cannot be saved. Please try again.")
         else:
             usr_dir = os.path.expanduser("~")
             file_path = os.path.join(usr_dir, file_name)
