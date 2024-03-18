@@ -6,8 +6,10 @@ def print_contacts_table(contact_list):
         ['Name', 'Phone Numbers', 'Birthday', 'Address', 'Email']
     ]
     for contact in contact_list:
-        result.append([contact.name.value, ', '.join(list(map(lambda x: x.value, contact.phones))), contact.birthday,
-                       contact.address, contact.email])
+        from datetime import datetime
+        result.append([contact.name.value, ', '.join(list(map(lambda x: x.value, contact.phones))),
+               contact.birthday.value.strftime('%d.%m.%Y') if contact.birthday else None,
+               contact.address, contact.email])
     pretty_print_table(result)
 
 
